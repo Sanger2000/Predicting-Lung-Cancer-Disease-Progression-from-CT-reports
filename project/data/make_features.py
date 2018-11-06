@@ -22,6 +22,7 @@ def createTextFeatures((baseline_reports, progress_report, _), max_base_feats, m
     baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'], max_features=max_base_feats).todense())
     progress_bow = np.array(learn_bow(progress_reports['clean_report_text'], max_features=max_prog_feats).todense())
     overallTextFeatures = np.hstack([baseline_bow, progress_bow])
+
 def make_id(num):
     if patient_id < 10:
         return "MSK_00" + str(patient_id)
@@ -30,25 +31,36 @@ def make_id(num):
     else:
         return "MSK_" + str(patient_id)
 
+def pad_vectors(feats, max_len, feat_lens):
+    for val in (True, False):
+        for i in range(len(feats[val])):
+            for j in range(max_len):
+                if j >= len(feats[val][i]):
+                    feats[val][i].append([0 for _ in range(feat_lens)])
+    return feats
 
-def setupFeatureVectors(df, desired_features, ):
+def setupFeatureVectors(df, desired_features, max_before=600, max_after=300):
+    FEAT_LENS = len(desired_features) + max_before + max_after
 
     patients = df.groupby("Patient ID")
     max_len = 0
 
-    context = {True: ([], []), False: ([], [])}
+    train_feats = {True: [], False: []}
 
     train_labels = []
     id_list = set()
 
     count = -1
 
-    before_text = learn_bow(df_train["before_text"], max_features = 600)
-    after_text = learn_bow(df_train["after_text"], max_features = 300)
+    before_text = learn_bow(df_train["before_text"], max_features = max_before)
+    after_text = learn_bow(df_train["after_text"], max_features = max_after)
+
+    train_features = {True: [], False: []}
 
     for patient_id in sorted([int(key[-3:]) for key in patients.groups.keys()]):
         count += 1
         patient = make_id(patient_id)
+        context = {True: [], False: []}
 
 
         checker = {True: False, False: False}
@@ -61,41 +73,39 @@ def setupFeatureVectors(df, desired_features, ):
             checker[df["is_baseline"][i]] = True
             len_counter[df["is_baseline"][i]] += 1
 
-            for j in range(len(desired_features)):
-                context[df["is_baseline"][i]][0].append([count, count2, j])
-                context[df["is_baseline"][i]][1].append(df[desired_features[j]][i])
+            context[df["is_baseline"][i]].append([df[desired_feat][i] for desired_feat in desired_features])
+            context[df["is_baseline"][i]][-1].extend(before_text[i])
+            context[df["is_baseline"][i]][-1].extend(after_text[i])
 
-            indices = torch.nonzero(before_text[i])
-            for index in indices:
-                context[df["is_baseline"][i]][0].append([count, count2, index + len(desired_features))
-                context[df["is_baseline"][i]][1].append(before_text[i][index])
-
-            indices = torch.nonzero(after_text[i])
-            for index in indices:
-                context[df["is_baseline"][i]][0].append([count, count2, index+len(desired_features)+len(before_text[i])])
-                context[df["is_baseline"][i]][1].append(after_text[i][index])
 
 
         if not(checker[True] or checker[False]):
             continue
+        elif not checker[True]:
+            context[True].append(0 for _ in range(FEAT_LENS))
+        elif not checker[False]:
+            context[False].append(0 for _ in range(FEAT_LENS))
+
 
         max_len = max(max_len, len_counter[True], len_counter[False])
+
         id_list.add(patient)
+        for val in (True, False):
+            train_features[val].append(context[val])
 
         train_labels.append(df["labels"][i])
 
-    baseline_train_features = torch.sparse.floatTensor(torch.LongTensor(context[True][0]).t().cuda(0), torch.floatTensor(context[True][1]).cuda(0), \
-                torch.Size([len(id_list), max_len, len(desired_features)+600+300])).cuda(0)
-    progress_train_features = torch.sparse.floatTensor(torch.LongTensor(context[False][0]).t().cuda(0), torch.floatTensor(context[False][1]).cuda(0), \
-                torch.Size([len(id_list), max_len, len(desired_features)+600+300]))).cuda(0)
+    train_features  = pad_vectors(train_features, max_len, FEAT_LENS)
 
-    return baseline_train_features, progress_train_features,  prepare_y(train_labels)
+    return train_features[False], train_features[True],  prepare_y(train_labels), id_list
+
 
 def create_data(max_base=400, max_prog=800, desired_features=("lens", "organs", "date_dist")):
     df = preprocess.load_reports()
     df_extraction = preprocess.extractFeatures(df)
-    df_text = createTextFeatures(preprocess.extractText(df), max_base, max_prog)
+    baseX, progX, labs, id_list = setupFeatureVectors(df, desired_features)
+    df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
 
-    baseX, progX, labs = setupFeatureVectors(df, desired_features)
+
 
     return baseX, progX, df_text, labs
