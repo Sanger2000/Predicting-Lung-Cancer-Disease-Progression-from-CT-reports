@@ -108,4 +108,4 @@ def create_data(max_base=400, max_prog=800, desired_features=("lens", "organs", 
 
 
 
-    return baseX, progX, df_text, labs
+    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.tensor(labs)
