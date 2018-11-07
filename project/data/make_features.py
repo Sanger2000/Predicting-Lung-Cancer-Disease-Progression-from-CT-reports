@@ -1,7 +1,9 @@
+import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
-import data.preprocess_data as preprocess
+import project.data.preprocess_data as preprocess
 import torch
+from sklearn.preprocessing import LabelEncoder
 
 def learn_bow(reports, min_df=1, ngram_range=(1, 3), max_features=5000):
     stopwords = ['mm', 'dd', '2017', '2016', '2015', '2014', '2013', '2012', 'date', 'md']
@@ -18,12 +20,13 @@ def prepare_y(data_y):
 
     return label_enc_y.transform(data_y)
 
-def createTextFeatures((baseline_reports, progress_report, _), max_base_feats, max_prog_feats):
+def createTextFeatures(reports, max_base_feats, max_prog_feats):
+    baseline_reports, progress_reports, _ = reports
     baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'], max_features=max_base_feats).todense())
     progress_bow = np.array(learn_bow(progress_reports['clean_report_text'], max_features=max_prog_feats).todense())
     overallTextFeatures = np.hstack([baseline_bow, progress_bow])
 
-def make_id(num):
+def make_id(patient_id):
     if patient_id < 10:
         return "MSK_00" + str(patient_id)
     elif patient_id < 100:
@@ -52,8 +55,8 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
 
     count = -1
 
-    before_text = learn_bow(df_train["before_text"], max_features = max_before)
-    after_text = learn_bow(df_train["after_text"], max_features = max_after)
+    before_text = learn_bow(df["before_text"], max_features = max_before)
+    after_text = learn_bow(df["after_text"], max_features = max_after)
 
     train_features = {True: [], False: []}
 
@@ -103,7 +106,7 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
 def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df = preprocess.load_reports()
     df_extraction = preprocess.extractFeatures(df)
-    baseX, progX, labs, id_list = setupFeatureVectors(df, desired_features, max_before, max_after)
+    baseX, progX, labs, id_list = setupFeatureVectors(df_extraction, desired_features, max_before, max_after)
     df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
 
 

@@ -1,10 +1,13 @@
+from datetime import datetime
+import re
 import urllib
 import zipfile
 import os
-import cPickle as pickle
+import pickle
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
-EMBEDDING_PATH = "/reports/GloveEmbeddings."
+EMBEDDING_PATH = "reports/GloveEmbeddings."
 
 def download_embeddings():
     urllib.urlretrieve('http://nlp.stanford.edu/data/glove.42B.300d.zip', EMBEDDING_PATH + "zip")
@@ -33,7 +36,7 @@ def make_POD(curr):
     return curr
 
 def load_reports():
-    df_train = pd.read_csv('/reports/urop_dataset_training.csv')
+    df_train = pd.read_csv('reports/urop_dataset_training.csv')
     df_train = df_train[df_train["Scan included on RECIST form? (y/n)"] == "yes"]
     df_train["Objective Response per RECIST v1.1"] = df_train["Objective Response per RECIST v1.1"].apply(lambda x: make_POD(x.strip()))
     df_train["clean_report_text"] = df_train["Scan report text"].apply(lambda text: re.sub('\W+', ' ', text).lower().strip() + str(' '))

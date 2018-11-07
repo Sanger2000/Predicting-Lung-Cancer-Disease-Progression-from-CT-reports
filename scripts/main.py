@@ -4,7 +4,7 @@ from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 import project.data.dataset_utils as data_utils
 import project.models.model_utils as model_utils
-import project.train.train_utils as train_utils
+import project.training.train_utils as train_utils
 import os
 import torch
 import datetime
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     for attr, value in sorted(args.__dict__.items()):
         print("\t{}={}".format(attr.upper(), value))
 
-    train_data = data_utils.load_dataset(TotalData(args))
+    train_data = data_utils.TotalData(args)
 
     # model
     if args.snapshot is None:
