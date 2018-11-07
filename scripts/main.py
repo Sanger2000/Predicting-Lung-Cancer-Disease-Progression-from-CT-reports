@@ -8,7 +8,7 @@ import project.train.train_utils as train_utils
 import os
 import torch
 import datetime
-import cPickle as pickle
+import pickle
 import pdb
 
 parser = argparse.ArgumentParser(description='Lung Cancer Disease Progression Classifier')

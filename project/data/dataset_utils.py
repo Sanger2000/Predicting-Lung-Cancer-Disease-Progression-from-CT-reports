@@ -2,9 +2,9 @@
 import gzip
 import numpy as np
 import torch
-import cPickle as pickle
+import pickle
 import torch.utils.data as data
-from example_project.data.make_features import create_data
+from project.data.make_features import create_data
 
 class TotalData(data.Dataset):
     def __init__(self, args):
