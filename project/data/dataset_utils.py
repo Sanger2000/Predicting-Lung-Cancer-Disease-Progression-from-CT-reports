@@ -14,4 +14,4 @@ class TotalData(data.Dataset):
         return self.baseX.size(0)
 
     def __getitem__(self, idx):
-        return {"baseline": self.baseX[idx], "progress": self.progX[idx], "text": self.text[idx], "labels": self.labels[idx]}
+        return {"baseX": self.baseX[idx], "progX": self.progX[idx], "text": self.text[idx], "labels": self.labels[idx]}
