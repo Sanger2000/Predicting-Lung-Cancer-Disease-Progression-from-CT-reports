@@ -12,14 +12,13 @@ import pdb
 
 class Net(nn.Module):
 
-    def __init__(self, architecture, feat_dim, text_dim):
+    def __init__(self, args):
         super(Net, self).__init__()
-        self.architecture = architecture
 
-        self.shared_layer = nn.Linear(feat_dim, 100)
+        self.shared_layer = nn.Linear(args.max_before+args.max_after+len(args.desired_features), 100)
         self.relu = nn.Relu()
         self.dropout = nn.Dropout(0.5)
-        self.output = nn.Linear(100*2 + text_dim, 4)
+        self.output = nn.Linear(100*2 + args.max_prog + args.max_base, 4)
         self.softmax = nn.Softmax()
 
     def forward(self, x, y, z, concatenation_function=torch.sum):

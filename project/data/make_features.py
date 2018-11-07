@@ -39,7 +39,7 @@ def pad_vectors(feats, max_len, feat_lens):
                     feats[val][i].append([0 for _ in range(feat_lens)])
     return feats
 
-def setupFeatureVectors(df, desired_features, max_before=600, max_after=300):
+def setupFeatureVectors(df, desired_features, max_before, max_after):
     FEAT_LENS = len(desired_features) + max_before + max_after
 
     patients = df.groupby("Patient ID")
@@ -100,10 +100,10 @@ def setupFeatureVectors(df, desired_features, max_before=600, max_after=300):
     return train_features[False], train_features[True],  prepare_y(train_labels), id_list
 
 
-def create_data(max_base, max_prog, desired_features):
+def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df = preprocess.load_reports()
     df_extraction = preprocess.extractFeatures(df)
-    baseX, progX, labs, id_list = setupFeatureVectors(df, desired_features)
+    baseX, progX, labs, id_list = setupFeatureVectors(df, desired_features, max_before, max_after)
     df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
 
 
