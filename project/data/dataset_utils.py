@@ -11,7 +11,7 @@ class TotalData(data.Dataset):
         self.baseX, self.progX, self.text, self.labels = create_data(max_base, max_prog, desired_features)
 
     def __len__(self):
-        return self.baseX[0].size(0)
+        return self.baseX.size(0)
 
     def __getitem__(self, idx):
         return {"baseline": self.baseX[idx], "progress": self.progX[idx], "text": self.text[idx], "labels": self.labels[idx]}

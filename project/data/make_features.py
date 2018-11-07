@@ -108,4 +108,4 @@ def create_data(max_base, max_prog, desired_features):
 
 
 
-    return torch.tensor(baseX).cuda(), torch.tensor(progX).cuda(), torch.tensor(df_text).cuda(), torch.tensor(labs).cuda()
+    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.tensor(labs)
