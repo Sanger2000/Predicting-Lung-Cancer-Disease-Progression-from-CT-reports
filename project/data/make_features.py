@@ -59,8 +59,6 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
     before_text = np.array(learn_bow(df["before_text"], max_features = max_before).todense())
     after_text = np.array(learn_bow(df["after_text"], max_features = max_after).todense())
 
-    print(before_text.shape)
-    print(type(int(before_text[0][0])))
     train_features = {True: [], False: []}
 
     for patient_id in sorted([int(key[-3:]) for key in patients.groups.keys()]):
@@ -109,17 +107,5 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df_extraction = preprocess.extractFeatures(df)
     baseX, progX, labs, id_list = setupFeatureVectors(df_extraction, desired_features, max_before, max_after)
     df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
-
-
-    print(baseX.shape)
-    print(progX.shape)
-    print(df_text.shape)
-    print(labs.shape)
-    print(labs)
-
-    print(torch.tensor(baseX).shape)
-    print(torch.tensor(progX).shape)
-    print(torch.from_numpy(df_text).shape)
-    print(torch.from_numpy(labs).shape)
 
     return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs)
