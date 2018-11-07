@@ -5,6 +5,12 @@ import project.data.preprocess_data as preprocess
 import torch
 from sklearn.preprocessing import LabelEncoder
 
+def one_hot_encode(labels):
+    print(labels)
+    out = np.zeros((labels.shape[0], 4))
+    out[np.arange(labels.shape[0]), labels] = 1
+    return out
+
 def learn_bow(reports, min_df=1, ngram_range=(1, 3), max_features=5000):
     stopwords = ['mm', 'dd', '2017', '2016', '2015', '2014', '2013', '2012', 'date', 'md']
     countVec = CountVectorizer(min_df = min_df, \
@@ -99,7 +105,7 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
 
     train_features  = pad_vectors(train_features, max_len, FEAT_LENS)
 
-    return np.array(train_features[False]), np.array(train_features[True]),  prepare_y(train_labels), id_list
+    return np.array(train_features[False]), np.array(train_features[True]),  one_hot_encode(prepare_y(train_labels)), id_list
 
 
 def create_data(max_base, max_prog, max_before, max_after, desired_features):
@@ -109,4 +115,3 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
 
     return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs)
-

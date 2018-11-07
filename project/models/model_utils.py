@@ -23,12 +23,12 @@ class Net(nn.Module):
 
     def forward(self, x, y, z, concatenation_function=torch.sum):
         first_base = self.relu(self.shared_layer(x))
-        second_base = concatenation_function(first_base, axis=1)
+        second_base = concatenation_function(first_base, 1)
 
         first_progress = self.relu(self.shared_layer(y))
-        second_progress = concatenation_function(first_progress, axis=1)
+        second_progress = concatenation_function(first_progress, 1)
 
-        overall_train = torch.cat(second_base, second_progress, z)
+        overall_train = torch.cat((second_base, second_progress, z), dim=-1)
 
         overall_out  =  self.output(overall_train)
 

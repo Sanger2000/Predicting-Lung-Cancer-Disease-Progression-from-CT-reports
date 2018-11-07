@@ -8,7 +8,7 @@ import torch.utils.data as data
 import datetime
 import numpy as np
 
-def train_model(train_data, model, args):
+def train_model(train_data, valid_data, model, args):
 
 
     if args.cuda:
@@ -23,13 +23,17 @@ def train_model(train_data, model, args):
         print("-------------\nEpoch {}:\n".format(epoch))
 
 
-        loss = run_epoch(train_data, True, model, optimizer, args)
+        loss, acc = run_epoch(train_data, True, model, optimizer, args)
 
         print('Train MSE loss: {:.6f}'.format( loss))
+        print('Train MSE accuracy: {:.6f}'.format( acc))
 
         print()
 
+        val_loss, val_acc = run_epoch(valid_data, False, model, optimizer, args)
 
+        print('Val MSE loss: {:.6f}'.format( val_loss))
+        print('Val MSE accuracy: {:.6f}'.format( val_acc))
         # Save model
         torch.save(model, args.save_path)
 
@@ -44,6 +48,7 @@ def run_epoch(data, is_training, model, optimizer, args):
         drop_last=True)
 
     losses = []
+    accuracies = []
 
     if is_training:
         model.train()
@@ -52,14 +57,14 @@ def run_epoch(data, is_training, model, optimizer, args):
 
     for batch in tqdm(data_loader):
 
-        x, y, z, labs = batch['baseX'], batch['progX'], batch['text'], batch['labels']
+        x, y, z, labs = batch['baseX'].float(), batch['progX'].float(), batch['text'].float(), batch['labels'].float()
         if args.cuda:
             x, y, z, labs = x.cuda(), y.cuda(), z.cuda(), labs.cuda()
 
         if is_training:
             optimizer.zero_grad()
-	
-	out = model(x, y, z)
+
+        out = model(x, y, z)
         loss = F.mse_loss(out, labs.float())
 
 
@@ -69,6 +74,11 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         losses.append(loss.cpu().data[0])
 
+        _, preds = torch.max(out, dim=1)
+        _, labs = torch.max(labs, dim=1)
+
+        accuracies.append(float(sum([preds[i]==labs[i] for i in range(preds.shape[0])]))/float(preds.shape[0]))
     # Calculate epoch level scores
     avg_loss = np.mean(losses)
-    return avg_loss
+    avg_acc = np.mean(accuracies)
+    return avg_loss, avg_acc

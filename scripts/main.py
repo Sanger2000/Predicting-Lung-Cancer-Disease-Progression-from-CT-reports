@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser(description='Lung Cancer Disease Progression Cl
 # learning
 parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
 parser.add_argument('--dropout', type=float, default=0.4, help='sets dropout layer [default: 0.4]')
+parser.add_argument('--valid_split', type=float, default=0.2, help='sets validation split from data [default: 0.2]')
 parser.add_argument('--epochs', type=int, default=30, help='number of epochs for train [default: 30]')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size for training [default: 32]')
 parser.add_argument('--max_base', type=int, default=400, help='maximum text features for baseline data [default: 400]')
@@ -23,7 +24,7 @@ parser.add_argument('--max_before', type=int, default=600, help='maximum text fe
 parser.add_argument('--max_after', type=int, default=300, help='maximum text features for context after volume [default: 300]')
 parser.add_argument('--desired_features', type=tuple, default=("lens", "organs", "date_dist"), help='enter context features in format - (\"feat_1\", ..., \"feat_n\")')
 # device
-parser.add_argument('--cuda', action='store_true', default=True, help='enable the gpu [default: True]')
+parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu [default: True]')
 parser.add_argument('--train', action='store_true', default=False, help='enable train [default: False]')
 # task
 parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     for attr, value in sorted(args.__dict__.items()):
         print("\t{}={}".format(attr.upper(), value))
 
-    train_data = data_utils.TotalData(args)
+    train_data, valid_data = data_utils.make_datasets(args)
 
     # model
     if args.snapshot is None:
@@ -55,4 +56,4 @@ if __name__ == '__main__':
     print()
     # train
     if args.train :
-        train_utils.train_model(train_data, model, args)
+        train_utils.train_model(train_data, valid_data, model, args)
