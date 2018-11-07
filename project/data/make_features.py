@@ -111,4 +111,4 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
 
 
 
-    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.tensor(labs)
+    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.from_numpy(labs)
