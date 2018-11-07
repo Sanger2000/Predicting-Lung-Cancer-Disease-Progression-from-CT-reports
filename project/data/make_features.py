@@ -100,7 +100,7 @@ def setupFeatureVectors(df, desired_features, max_before=600, max_after=300):
     return train_features[False], train_features[True],  prepare_y(train_labels), id_list
 
 
-def create_data(max_base=400, max_prog=800, desired_features=("lens", "organs", "date_dist")):
+def create_data(max_base, max_prog, desired_features):
     df = preprocess.load_reports()
     df_extraction = preprocess.extractFeatures(df)
     baseX, progX, labs, id_list = setupFeatureVectors(df, desired_features)
@@ -108,4 +108,4 @@ def create_data(max_base=400, max_prog=800, desired_features=("lens", "organs", 
 
 
 
-    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.tensor(labs)
+    return torch.tensor(baseX).cuda(), torch.tensor(progX).cuda(), torch.tensor(df_text).cuda(), torch.tensor(labs).cuda()
