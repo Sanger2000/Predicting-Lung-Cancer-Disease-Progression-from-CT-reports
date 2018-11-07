@@ -35,25 +35,25 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     # update args and print
-
+    MAX_ACC = 0
     print("\nParameters:")
     for attr, value in sorted(args.__dict__.items()):
         print("\t{}={}".format(attr.upper(), value))
+    for valid_split in (0.2, 0.3):
+        args.valid_split = valid_split
 
-    train_data, valid_data = data_utils.make_datasets(args)
+        train_data, valid_data = data_utils.make_datasets(args)
 
-    # model
-    if args.snapshot is None:
-        model = model_utils.Net(args)
-    else :
-        print('\nLoading model from [%s]...' % args.snapshot)
-        try:
-            model = torch.load(args.snapshot)
-        except :
-            print("Sorry, This snapshot doesn't exist."); exit()
-    print(model)
+        for lr in (0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01):
+            args.lr=lr
+            for batch_size in (10, 16, 20, 24, 30):
+                args.batch_size = batch_size
+                for dropout in (0.05, 0.1, 0.2, 0.3):
+                    args.dropout = dropout
 
-    print()
-    # train
-    if args.train :
-        train_utils.train_model(train_data, valid_data, model, args)
+                    model = model_utils.Net(args)
+                    print(model)
+
+                    print()
+
+                    MAX_ACC = train_utils.train_model(train_data, valid_data, model, args, MAX_ACC)

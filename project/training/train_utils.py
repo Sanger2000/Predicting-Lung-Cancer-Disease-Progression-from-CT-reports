@@ -8,8 +8,7 @@ import torch.utils.data as data
 import datetime
 import numpy as np
 
-def train_model(train_data, valid_data, model, args):
-
+def train_model(train_data, valid_data, model, args, MAX_ACC):
 
     if args.cuda:
         model = model.cuda()
@@ -31,11 +30,17 @@ def train_model(train_data, valid_data, model, args):
         print()
 
         val_loss, val_acc = run_epoch(valid_data, False, model, optimizer, args)
-
         print('Val MSE loss: {:.6f}'.format( val_loss))
         print('Val MSE accuracy: {:.6f}'.format( val_acc))
+
+
+        model.set_accuracy(val_acc)
+        if model.get_accuracy() > MAX_ACC:
+            MAX_ACC = model.get_accuracy()
+            torch.save(model, args.save_path)
+
         # Save model
-        torch.save(model, args.save_path)
+    return MAX_ACC
 
 def run_epoch(data, is_training, model, optimizer, args):
     '''

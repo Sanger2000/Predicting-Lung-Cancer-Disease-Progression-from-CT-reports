@@ -6,7 +6,6 @@ import torch
 from sklearn.preprocessing import LabelEncoder
 
 def one_hot_encode(labels):
-    print(labels)
     out = np.zeros((labels.shape[0], 4))
     out[np.arange(labels.shape[0]), labels] = 1
     return out

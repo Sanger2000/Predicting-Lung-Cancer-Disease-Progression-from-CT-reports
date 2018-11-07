@@ -18,8 +18,11 @@ class Net(nn.Module):
         self.shared_layer = nn.Linear(args.max_before+args.max_after+len(args.desired_features), 100)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(args.dropout)
-        self.output = nn.Linear(100*2 + args.max_prog + args.max_base, 4)
+        self.output = nn.Linear(100*2 + args.max_prog + args.max_base, 4, bias=False)
         self.softmax = nn.Softmax()
+
+        self.val_acc=0
+        self.args = args
 
     def forward(self, x, y, z, concatenation_function=torch.sum):
         first_base = self.relu(self.shared_layer(x))
@@ -33,3 +36,12 @@ class Net(nn.Module):
         overall_out  =  self.output(overall_train)
 
         return self.softmax(overall_out)
+
+    def set_accuracy(self, acc):
+        self.val_acc=acc
+
+    def get_accuracy(self):
+        return self.val_acc
+
+    def get_args(self):
+        return self.args
