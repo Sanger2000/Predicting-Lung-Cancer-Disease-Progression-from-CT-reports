@@ -25,6 +25,7 @@ def createTextFeatures(reports, max_base_feats, max_prog_feats):
     baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'], max_features=max_base_feats).todense())
     progress_bow = np.array(learn_bow(progress_reports['clean_report_text'], max_features=max_prog_feats).todense())
     overallTextFeatures = np.hstack([baseline_bow, progress_bow])
+    return overallTextFeatures
 
 def make_id(patient_id):
     if patient_id < 10:
@@ -39,7 +40,7 @@ def pad_vectors(feats, max_len, feat_lens):
         for i in range(len(feats[val])):
             for j in range(max_len):
                 if j >= len(feats[val][i]):
-                    feats[val][i].append([0 for _ in range(feat_lens)])
+                    feats[val][i].append(np.zeros(feat_lens))
     return feats
 
 def setupFeatureVectors(df, desired_features, max_before, max_after):
@@ -55,9 +56,11 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
 
     count = -1
 
-    before_text = learn_bow(df["before_text"], max_features = max_before)
-    after_text = learn_bow(df["after_text"], max_features = max_after)
+    before_text = np.array(learn_bow(df["before_text"], max_features = max_before).todense())
+    after_text = np.array(learn_bow(df["after_text"], max_features = max_after).todense())
 
+    print(before_text.shape)
+    print(type(int(before_text[0][0])))
     train_features = {True: [], False: []}
 
     for patient_id in sorted([int(key[-3:]) for key in patients.groups.keys()]):
@@ -76,18 +79,16 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
             checker[df["is_baseline"][i]] = True
             len_counter[df["is_baseline"][i]] += 1
 
-            context[df["is_baseline"][i]].append([df[desired_feat][i] for desired_feat in desired_features])
-            context[df["is_baseline"][i]][-1].extend(before_text[i])
-            context[df["is_baseline"][i]][-1].extend(after_text[i])
-
+            context[df["is_baseline"][i]].append(np.concatenate((np.array([df[desired_feat][i] for desired_feat in desired_features]), \
+                                                            before_text[i], after_text[i])))
 
 
         if not(checker[True] or checker[False]):
             continue
         elif not checker[True]:
-            context[True].append(0 for _ in range(FEAT_LENS))
+            context[True].append(np.zeros(FEAT_LENS))
         elif not checker[False]:
-            context[False].append(0 for _ in range(FEAT_LENS))
+            context[False].append(np.zeros(FEAT_LENS))
 
 
         max_len = max(max_len, len_counter[True], len_counter[False])
@@ -100,7 +101,7 @@ def setupFeatureVectors(df, desired_features, max_before, max_after):
 
     train_features  = pad_vectors(train_features, max_len, FEAT_LENS)
 
-    return train_features[False], train_features[True],  prepare_y(train_labels), id_list
+    return np.array(train_features[False]), np.array(train_features[True]),  prepare_y(train_labels), id_list
 
 
 def create_data(max_base, max_prog, max_before, max_after, desired_features):
@@ -110,5 +111,15 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
 
 
+    print(baseX.shape)
+    print(progX.shape)
+    print(df_text.shape)
+    print(labs.shape)
+    print(labs)
 
-    return torch.tensor(baseX), torch.tensor(progX), torch.tensor(df_text), torch.from_numpy(labs)
+    print(torch.tensor(baseX).shape)
+    print(torch.tensor(progX).shape)
+    print(torch.from_numpy(df_text).shape)
+    print(torch.from_numpy(labs).shape)
+
+    return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs)
