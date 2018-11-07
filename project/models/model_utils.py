@@ -16,8 +16,8 @@ class Net(nn.Module):
         super(Net, self).__init__()
 
         self.shared_layer = nn.Linear(args.max_before+args.max_after+len(args.desired_features), 100)
-        self.relu = nn.Relu()
-        self.dropout = nn.Dropout(0.5)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(args.dropout)
         self.output = nn.Linear(100*2 + args.max_prog + args.max_base, 4)
         self.softmax = nn.Softmax()
 
