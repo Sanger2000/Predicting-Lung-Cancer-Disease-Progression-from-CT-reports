@@ -11,7 +11,7 @@ import pdb
 
 class TextNet(nn.Module):
     def __init__(self, args):
-        super(FeatureNet, self).__init__()
+        super(TextNet, self).__init__()
 
 
         self.relu = nn.ReLU()
@@ -37,7 +37,7 @@ class TextNet(nn.Module):
 
     def get_args(self):
         return self.args
-        
+
 class FeatureNet(nn.Module):
     def __init__(self, args, concat_func):
         super(FeatureNet, self).__init__()
