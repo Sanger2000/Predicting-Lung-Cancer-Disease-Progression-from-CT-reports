@@ -8,7 +8,7 @@ import torch.utils.data as data
 import datetime
 import numpy as np
 
-def train_model(train_data, valid_data, model, args, MAX_ACC):
+def train_model(train_data, valid_data, model, args, MAX_ACC, type):
 
     if args.cuda:
         model = model.cuda()
@@ -22,14 +22,14 @@ def train_model(train_data, valid_data, model, args, MAX_ACC):
         print("-------------\nEpoch {}:\n".format(epoch))
 
 
-        loss, acc = run_epoch(train_data, True, model, optimizer, args)
+        loss, acc = run_epoch(train_data, True, model, optimizer, args, type)
 
         print('Train MSE loss: {:.6f}'.format( loss))
         print('Train MSE accuracy: {:.6f}'.format( acc))
 
         print()
 
-        val_loss, val_acc = run_epoch(valid_data, False, model, optimizer, args)
+        val_loss, val_acc = run_epoch(valid_data, False, model, optimizer, args, type)
         print('Val MSE loss: {:.6f}'.format( val_loss))
         print('Val MSE accuracy: {:.6f}'.format( val_acc))
 
@@ -44,7 +44,7 @@ def train_model(train_data, valid_data, model, args, MAX_ACC):
         # Save model
     return MAX_ACC, temp_max_acc
 
-def run_epoch(data, is_training, model, optimizer, args):
+def run_epoch(data, is_training, model, optimizer, args, type):
     '''
     Train model for one pass of train data, and return loss, acccuracy
     '''
@@ -71,7 +71,13 @@ def run_epoch(data, is_training, model, optimizer, args):
         if is_training:
             optimizer.zero_grad()
 
-        out = model(x, y, z)
+        if type == "combined":
+            out = model(x, y, z)
+        elif type == "features":
+            out = model(x, y)
+        else:
+            out = model(z)
+
         loss = F.mse_loss(out, labs.float())
 
 

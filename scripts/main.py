@@ -53,7 +53,7 @@ if __name__ == '__main__':
                     args.save_path='model_concat.pt'
                     model1 = model_utils.CombinedNet(args, concat_func)
                     print(model1)
-                    MAX_ACC1, temp_max_acc = train_utils.train_model(train_data, valid_data, model1, args, MAX_ACC1)
+                    MAX_ACC1, temp_max_acc = train_utils.train_model(train_data, valid_data, model1, args, MAX_ACC1, "combined")
                     if temp_max_acc not in out_dict:
                         out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "combined")]
                     else:
@@ -64,7 +64,7 @@ if __name__ == '__main__':
                     args.save_path='model_features.pt'
                     model2 = model_utils.FeatureNet(args, concat_func)
                     print(model2)
-                    MAX_ACC2, temp_max_acc = train_utils.train_model(train_data, valid_data, model2, args, MAX_ACC2)
+                    MAX_ACC2, temp_max_acc = train_utils.train_model(train_data, valid_data, model2, args, MAX_ACC2, "features")
                     if temp_max_acc not in out_dict:
                         out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "features")]
                     else:
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                     args.save_path='model_text.pt'
                     model3 = model_utils.TextNet(args)
                     print(model3)
-                    MAX_ACC3, temp_max_acc = train_utils.train_model(train_data, valid_data, model3, args, MAX_ACC3)
+                    MAX_ACC3, temp_max_acc = train_utils.train_model(train_data, valid_data, model3, args, MAX_ACC3, "text")
                     if temp_max_acc not in out_dict:
                         out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "text")]
                     else:
