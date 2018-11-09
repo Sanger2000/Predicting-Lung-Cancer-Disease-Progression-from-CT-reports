@@ -29,6 +29,15 @@ class TextNet(nn.Module):
         dropout = self.dropout(nonlinear)
         return self.softmax(dropout)
 
+    def set_accuracy(self, acc):
+        self.val_acc=acc
+
+    def get_accuracy(self):
+        return self.val_acc
+
+    def get_args(self):
+        return self.args
+        
 class FeatureNet(nn.Module):
     def __init__(self, args, concat_func):
         super(FeatureNet, self).__init__()
@@ -55,6 +64,14 @@ class FeatureNet(nn.Module):
 
         return self.softmax(overall_out)
 
+    def set_accuracy(self, acc):
+        self.val_acc=acc
+
+    def get_accuracy(self):
+        return self.val_acc
+
+    def get_args(self):
+        return self.args
 class CombinedNet(nn.Module):
 
     def __init__(self, args, concat_func):
