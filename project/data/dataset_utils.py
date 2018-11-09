@@ -10,6 +10,8 @@ def make_datasets(args):
     baseX, progX, text, labels = create_data(args.max_base, args.max_prog, args.max_before, args.max_after, args.desired_features)
     split = int(args.valid_split*baseX.size(0))
 
+    print(baseX.size(0))
+
     baseX_valid, baseX_train = baseX[:split], baseX[split:]
     progX_valid, progX_train = progX[:split], progX[split:]
     text_valid, text_train = text[:split], text[split:]

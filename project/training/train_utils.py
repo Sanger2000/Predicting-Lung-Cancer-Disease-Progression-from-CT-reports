@@ -16,7 +16,7 @@ def train_model(train_data, valid_data, model, args, MAX_ACC):
     optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
 
     model.train()
-
+    temp_max_acc = 0
     for epoch in range(1, args.epochs+1):
 
         print("-------------\nEpoch {}:\n".format(epoch))
@@ -38,9 +38,11 @@ def train_model(train_data, valid_data, model, args, MAX_ACC):
         if model.get_accuracy() > MAX_ACC:
             MAX_ACC = model.get_accuracy()
             torch.save(model, args.save_path)
+        if model.get_accuracy() > temp_max_acc:
+            temp_max_acc = model.get_accuracy()
 
         # Save model
-    return MAX_ACC
+    return MAX_ACC, temp_max_acc
 
 def run_epoch(data, is_training, model, optimizer, args):
     '''

@@ -13,11 +13,12 @@ import pdb
 
 parser = argparse.ArgumentParser(description='Lung Cancer Disease Progression Classifier')
 # learning
-parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
-parser.add_argument('--dropout', type=float, default=0.4, help='sets dropout layer [default: 0.4]')
+parser.add_argument('--lr', type=float, default=0.0001, help='initial learning rate [default: 0.001]')
+parser.add_argument('--dropout', type=float, default=0.05, help='sets dropout layer [default: 0.4]')
 parser.add_argument('--valid_split', type=float, default=0.2, help='sets validation split from data [default: 0.2]')
 parser.add_argument('--epochs', type=int, default=30, help='number of epochs for train [default: 30]')
-parser.add_argument('--batch_size', type=int, default=32, help='batch size for training [default: 32]')
+parser.add_argument('--batch_size', type=int, default=10, help='batch size for training [default: 32]')
+parser.add_argument('--mid_dim', type=int, default=100, help='middle dimension of feature extraction architecture [default: 100]')
 parser.add_argument('--max_base', type=int, default=400, help='maximum text features for baseline data [default: 400]')
 parser.add_argument('--max_prog', type=int, default=800, help='maximum text features for baseline data [default: 800]')
 parser.add_argument('--max_before', type=int, default=600, help='maximum text features for context before volume [default: 600]')
@@ -28,32 +29,56 @@ parser.add_argument('--cuda', action='store_true', default=False, help='enable t
 parser.add_argument('--train', action='store_true', default=False, help='enable train [default: False]')
 # task
 parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
-parser.add_argument('--save_path', type=str, default="model.pt", help='Path where to dump model')
+parser.add_argument('--save_path', type=str, default="model2.pt", help='Path where to dump model')
 
 
 args = parser.parse_args()
 
 if __name__ == '__main__':
     # update args and print
-    MAX_ACC = 0
+    MAX_ACC1, MAX_ACC2, MAX_ACC3 = 0, 0, 0
     print("\nParameters:")
     for attr, value in sorted(args.__dict__.items()):
         print("\t{}={}".format(attr.upper(), value))
-    for valid_split in (0.2, 0.3):
-        args.valid_split = valid_split
-
-        train_data, valid_data = data_utils.make_datasets(args)
-
+    out_dic5 = {}
+    train_data, valid_data = data_utils.make_datasets(args)
+    for concat_func in (torch.sum, torch.max, torch.mean, torch.min):
         for lr in (0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01):
-            args.lr=lr
-            for batch_size in (10, 16, 20, 24, 30):
-                args.batch_size = batch_size
-                for dropout in (0.05, 0.1, 0.2, 0.3):
-                    args.dropout = dropout
+            args.lr = lr
+            for dropout in (0.05, 0.1, 0.2, 0.3, 0.4):
+                args.dropout = dropout
+                for mid_dim in (20, 50, 100, 200, 300):
+                    args.mid_dim = mid_dim
 
-                    model = model_utils.Net(args)
-                    print(model)
+                    args.save_path='model_concat.pt'
+                    model1 = model_utils.CombinedNet(args, concat_func)
+                    print(model1)
+                    MAX_ACC1, temp_max_acc = train_utils.train_model(train_data, valid_data, model1, args, MAX_ACC1)
+                    if temp_max_acc not in out_dict:
+                        out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "combined")]
+                    else:
+                        out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "combined"))
 
                     print()
 
-                    MAX_ACC = train_utils.train_model(train_data, valid_data, model, args, MAX_ACC)
+                    args.save_path='model_features.pt'
+                    model2 = model_utils.FeatureNet(args, concat_func)
+                    print(model2)
+                    MAX_ACC2, temp_max_acc = train_utils.train_model(train_data, valid_data, model2, args, MAX_ACC2)
+                    if temp_max_acc not in out_dict:
+                        out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "features")]
+                    else:
+                        out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "features"))
+                    print()
+
+                    args.save_path='model_text.pt'
+                    model3 = model_utils.TextNet(args)
+                    print(model3)
+                    MAX_ACC3, temp_max_acc = train_utils.train_model(train_data, valid_data, model3, args, MAX_ACC3)
+                    if temp_max_acc not in out_dict:
+                        out_dict[temp_max_acc] = [(concat_func, lr, dropout, mid_dim, "text")]
+                    else:
+                        out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "text"))
+                    print()
+
+    pickle.dump(out_dict, open("data.pkl", "wb"))
