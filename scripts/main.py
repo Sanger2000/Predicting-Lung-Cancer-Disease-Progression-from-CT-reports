@@ -40,7 +40,7 @@ if __name__ == '__main__':
     print("\nParameters:")
     for attr, value in sorted(args.__dict__.items()):
         print("\t{}={}".format(attr.upper(), value))
-    out_dic5 = {}
+    out_dict = {}
     train_data, valid_data = data_utils.make_datasets(args)
     for concat_func in (torch.sum, torch.max, torch.mean, torch.min):
         for lr in (0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01):
