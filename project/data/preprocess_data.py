@@ -7,7 +7,8 @@ import pickle
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-EMBEDDING_PATH = "reports/GloveEmbeddings."
+EMBEDDING_PATH = "embeddings/GloveEmbeddings."
+
 
 def download_embeddings():
     urllib.urlretrieve('http://nlp.stanford.edu/data/glove.42B.300d.zip', EMBEDDING_PATH + "zip")

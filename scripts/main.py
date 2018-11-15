@@ -80,5 +80,8 @@ if __name__ == '__main__':
                     else:
                         out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "text"))
                     print()
+                    
+                    pickle.dump(out_dict, open("data.pkl", "wb"))
+
 
     pickle.dump(out_dict, open("data.pkl", "wb"))

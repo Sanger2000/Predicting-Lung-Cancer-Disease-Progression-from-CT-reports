@@ -5,6 +5,22 @@ import project.data.preprocess_data as preprocess
 import torch
 from sklearn.preprocessing import LabelEncoder
 
+def tokenize_input(text, slider, max_len):
+    tokenizer = tokenization.FullTokenizer
+    tokens = tokenizer.tokenize(text)
+    outputs = []
+    for i in range((len(text)-max_len)/slider+1):
+        outputs.append("[CLS]")
+        outputs[-1].extend(tokens[i*slider:i*slider+max_len])
+        outputs[-1].append("[SEP]")
+    if i*slider + max_len != len(text):
+        outputs.append("[CLS]")
+        outputs[-1].extend(tokens[i*slider+max_len:]+[0 for j in range(2*max_len-len(text)+i*slider)])
+        outputs[-1].append("[SEP]")
+
+    return outputs
+
+
 def one_hot_encode(labels):
     out = np.zeros((labels.shape[0], 4))
     out[np.arange(labels.shape[0]), labels] = 1
