@@ -12,10 +12,10 @@ def make_datasets(args):
 
     print(baseX.size(0))
 
-    baseX_valid, baseX_train = baseX[:split], baseX[split:]
-    progX_valid, progX_train = progX[:split], progX[split:]
-    text_valid, text_train = text[:split], text[split:]
-    labels_valid, labels_train = labels[:split], labels[split:]
+    baseX_valid, baseX_train = baseX[-split:], baseX[:-split]
+    progX_valid, progX_train = progX[-split:], progX[:-split]
+    text_valid, text_train = text[-split:], text[:-split]
+    labels_valid, labels_train = labels[-split:], labels[:-split]
 
     trainDataset = TotalData(baseX_train, progX_train, text_train, labels_train)
     validDataset = TotalData(baseX_valid, progX_valid, text_valid, labels_valid)
