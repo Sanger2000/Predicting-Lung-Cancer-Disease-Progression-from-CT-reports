@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import project.data.preprocess_data as preprocess
 import torch
 from sklearn.preprocessing import LabelEncoder
+import tokenization
 
 def tokenize_input(text, slider, max_len):
     tokenizer = tokenization.FullTokenizer
