@@ -5,9 +5,14 @@ import zipfile
 import os
 import pickle
 import pandas as pd
+import tokenizer
 from sklearn.preprocessing import LabelEncoder
 
 EMBEDDING_PATH = "embeddings/GloveEmbeddings."
+
+def preprocess_tokens(tokens, token_length):
+    for i in range(len(tokens)-token_length):
+        tokens.append(0)
 
 
 def download_embeddings():
