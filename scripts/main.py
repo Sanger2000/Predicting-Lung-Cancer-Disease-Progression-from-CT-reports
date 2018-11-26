@@ -5,6 +5,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import project.data.dataset_utils as data_utils
 import project.models.model_utils as model_utils
 import project.training.train_utils as train_utils
+import torch.nn as N
 import os
 import torch
 import datetime
@@ -34,8 +35,8 @@ parser.add_argument('--save_path', type=str, default="model2.pt", help='Path whe
 
 args = parser.parse_args()
 
-if __name__ == '__main__':
-    # update args and print
+
+def test_hyperparamaters(args, model_save_directory="test_models/", dictionary_save_file="data.pkl"):
     MAX_ACC1, MAX_ACC2, MAX_ACC3 = 0, 0, 0
     print("\nParameters:")
     for attr, value in sorted(args.__dict__.items()):
@@ -50,7 +51,7 @@ if __name__ == '__main__':
                 for mid_dim in (20, 50, 100, 200, 300):
                     args.mid_dim = mid_dim
 
-                    args.save_path='model_concat.pt'
+                    args.save_path=model_save_directory + 'model_concat.pt'
                     model1 = model_utils.CombinedNet(args, concat_func)
                     print(model1)
                     MAX_ACC1, temp_max_acc = train_utils.train_model(train_data, valid_data, model1, args, MAX_ACC1, "combined")
@@ -61,7 +62,7 @@ if __name__ == '__main__':
 
                     print()
 
-                    args.save_path='model_features.pt'
+                    args.save_path=model_save_directory + 'model_features.pt'
                     model2 = model_utils.FeatureNet(args, concat_func)
                     print(model2)
                     MAX_ACC2, temp_max_acc = train_utils.train_model(train_data, valid_data, model2, args, MAX_ACC2, "features")
@@ -71,7 +72,7 @@ if __name__ == '__main__':
                         out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "features"))
                     print()
 
-                    args.save_path='model_text.pt'
+                    args.save_path=model_save_directory + 'model_text.pt'
                     model3 = model_utils.TextNet(args)
                     print(model3)
                     MAX_ACC3, temp_max_acc = train_utils.train_model(train_data, valid_data, model3, args, MAX_ACC3, "text")
@@ -80,8 +81,18 @@ if __name__ == '__main__':
                     else:
                         out_dict[temp_max_acc].append((concat_func, lr, dropout, mid_dim, "text"))
                     print()
-                    
-                    pickle.dump(out_dict, open("data.pkl", "wb"))
 
+                    pickle.dump(out_dict, open(dictionary_save_file, "wb"))
 
-    pickle.dump(out_dict, open("data.pkl", "wb"))
+def finetune_bert(args, model_save_directory, bert_file_path):
+
+    train_data, valid_data = data_utils.make_datasets(args)
+    pretrained_bert = torch.load(bert_file_path)
+    last_layer = N.Linear(pretrained_bert.modules[-1].shape(-1), 4)
+    model = N.Sequential(pretrained_bert, last_layer, N.Softmax())
+
+    args.save_path = model_save_directory + "bert_model.pt"
+    ACC, _ = train_utils.train_model(train_data, valid_data, model, args, 0)
+
+if __name__ == '__main__':
+    #test_hyperparamaters(args)

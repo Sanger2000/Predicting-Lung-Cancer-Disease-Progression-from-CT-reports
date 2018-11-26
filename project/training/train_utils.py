@@ -64,9 +64,9 @@ def run_epoch(data, is_training, model, optimizer, args, type):
 
     for batch in tqdm(data_loader):
 
-        x, y, z, labs = batch['baseX'].float(), batch['progX'].float(), batch['text'].float(), batch['labels'].float()
+        x, y, z, a, b, labs = batch['baseX'].float(), batch['progX'].float(), batch['text'].float(), batch['token_ids'].float(), batch['segment_ids'].float(), batch['labels'].float()
         if args.cuda:
-            x, y, z, labs = x.cuda(), y.cuda(), z.cuda(), labs.cuda()
+            x, y, z, a, b, labs = x.cuda(), y.cuda(), z.cuda(), a.cuda(), b.cuda() labs.cuda()
 
         if is_training:
             optimizer.zero_grad()
@@ -75,6 +75,8 @@ def run_epoch(data, is_training, model, optimizer, args, type):
             out = model(x, y, z)
         elif type == "features":
             out = model(x, y)
+        elif type == "bert":
+            out = model(a, b)
         else:
             out = model(z)
 

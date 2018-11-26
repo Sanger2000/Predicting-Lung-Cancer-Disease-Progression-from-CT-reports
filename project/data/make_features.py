@@ -4,11 +4,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 import project.data.preprocess_data as preprocess
 import torch
 from sklearn.preprocessing import LabelEncoder
-import tokenization
+#from project.data import tokenization
 
-def tokenize_input(baseline, context, split, max_len=512):
+def tokenize_input(baseline_text, context_text, split, tokenizer=tokenization.FullTokenizer, max_len=509):
+    baseline = tokenizer.tokenize(baseline_text)
+    context = tokenizer.tokenize(context_text)
+
     baseline_size = int(split*max_len)
-    context_size = max_len - baseline_size - 3
+    context_size = max_len - baseline_size
 
     baseline = preprocess.preprocess_tokens(baseline, baseline_size)
     context = preprocess.preprocess_tokens(context, context_size)
@@ -26,10 +29,15 @@ def tokenize_input(baseline, context, split, max_len=512):
     for token in context:
         final_tokens.append(token)
         classifications.append(1)
+
     final_tokens.append("[SEP]")
 
+    for i in range(max_len-(len(context) + len(baseline)+3)):
+        final_tokens.append(["[MASK]"])
+        classifications.append(0)
 
-    return final_tokens
+
+    return tokenizer.convert_tokens_to_ids(final_tokens), classifications
 
 
 def one_hot_encode(labels):
@@ -138,6 +146,9 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df = preprocess.load_reports()
     df_extraction = preprocess.extractFeatures(df)
     baseX, progX, labs, id_list = setupFeatureVectors(df_extraction, desired_features, max_before, max_after)
-    df_text = createTextFeatures(preprocess.extractText(df, id_list), max_base, max_prog)
+    reports = preprocess.extractText(df, id_list)
+    df_text = createTextFeatures(reports, max_base, max_prog)
+    id_vals = torch.tensor(map(lambda x: tokenize_input(x[0], x[1]), zip(reports[0]['clean_report_text'], reports[1]['clean_report_text'])))
+    id_vals.resize_((2, id_vals.shape(0)))
 
-    return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs)
+    return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs), ids[0], ids[1]
