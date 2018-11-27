@@ -96,3 +96,4 @@ def finetune_bert(args, model_save_directory, bert_file_path):
 
 if __name__ == '__main__':
     #test_hyperparamaters(args)
+    finetune_bert(args, "models", "BertModels/cased_bert.bin")
