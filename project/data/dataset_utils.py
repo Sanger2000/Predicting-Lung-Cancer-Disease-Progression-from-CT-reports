@@ -15,7 +15,7 @@ def make_datasets(args):
     baseX, progX, text, labels, token_ids, segment_ids = baseX[indices], progX[indices], text[indices], labels[indices], token_ids[indices], segment_ids[indices]
 
     baseX_valid, baseX_train = baseX[:split], baseX[split:]
-    progX_valid, progX_train = progX[[:split], progX[split:]
+    progX_valid, progX_train = progX[:split], progX[split:]
     text_valid, text_train = text[:split], text[split:]
     labels_valid, labels_train = labels[:split], labels[split:]
     token_valid, token_train = token_ids[:split], token_ids[split:]

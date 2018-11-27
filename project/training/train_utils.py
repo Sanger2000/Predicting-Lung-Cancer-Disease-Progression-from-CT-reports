@@ -66,7 +66,7 @@ def run_epoch(data, is_training, model, optimizer, args, type):
 
         x, y, z, a, b, labs = batch['baseX'].float(), batch['progX'].float(), batch['text'].float(), batch['token_ids'].float(), batch['segment_ids'].float(), batch['labels'].float()
         if args.cuda:
-            x, y, z, a, b, labs = x.cuda(), y.cuda(), z.cuda(), a.cuda(), b.cuda() labs.cuda()
+            x, y, z, a, b, labs = x.cuda(), y.cuda(), z.cuda(), a.cuda(), b.cuda(), labs.cuda()
 
         if is_training:
             optimizer.zero_grad()
