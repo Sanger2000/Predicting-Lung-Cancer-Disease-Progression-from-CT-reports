@@ -12,9 +12,18 @@ EMBEDDING_PATH = "embeddings/GloveEmbeddings."
 
 def preprocess_tokens(tokens, token_length):
     if len(tokens) > token_length:
-        tokens = tokens[token_length]
+        tokens = tokens[:token_length]
     return tokens
 
+def bert_text_cleaner(text):
+    start = re.search("FINDINGS?:", text)
+    if start == None:
+        return ""
+    end = re.search("IMPRESSIONS?:", text)
+    if end == None:
+        return text[start.end():]
+
+    return text[start.end():end.start()]
 
 def download_embeddings():
     urllib.urlretrieve('http://nlp.stanford.edu/data/glove.42B.300d.zip', EMBEDDING_PATH + "zip")
@@ -47,6 +56,7 @@ def load_reports():
     df_train = df_train[df_train["Scan included on RECIST form? (y/n)"] == "yes"]
     df_train["Objective Response per RECIST v1.1"] = df_train["Objective Response per RECIST v1.1"].apply(lambda x: make_POD(x.strip()))
     df_train["clean_report_text"] = df_train["Scan report text"].apply(lambda text: re.sub('\W+', ' ', text).lower().strip() + str(' '))
+    df_train["bert_text"] = df_train["Scan report text"].apply(bert_text_cleaner)
 
     return df_train
 
@@ -185,7 +195,8 @@ def extractText(df_train, id_list):
     df_train = df_train[df_train["Patient ID"].isin(id_list)]
 
     df_train['is_baseline'] = (df_train[column_baseline] == 'baseline')
-    groupped_df = df_train.groupby([column_patient, 'is_baseline'])['clean_report_text'].apply(lambda x: x.sum())
+    groupped_df = df_train.groupby([column_patient, 'is_baseline'])['clean_report_text', 'bert_text'].apply(lambda x: x.sum())
+
     predictions = df_train.groupby(['Patient ID'])["Objective Response per RECIST v1.1"].first()
 
     # fill missing reports with nothing
