@@ -11,6 +11,7 @@ import torch
 import datetime
 import pickle
 import pdb
+from pytorch_pretrained_bert import BertForSequenceClassification
 
 parser = argparse.ArgumentParser(description='Lung Cancer Disease Progression Classifier')
 # learning
@@ -87,12 +88,10 @@ def test_hyperparamaters(args, model_save_directory="test_models/", dictionary_s
 def finetune_bert(args, model_save_directory, bert_file_path):
 
     train_data, valid_data = data_utils.make_datasets(args)
-    pretrained_bert = torch.load(bert_file_path)
-    last_layer = N.Linear(pretrained_bert.modules[-1].shape(-1), 4)
-    model = N.Sequential(pretrained_bert, last_layer, N.Softmax())
+    model = BertForSequenceClassification.from_pretrained("BertModels", num_labels=4)
 
     args.save_path = model_save_directory + "bert_model.pt"
-    ACC, _ = train_utils.train_model(train_data, valid_data, model, args, 0)
+    ACC, _ = train_utils.train_model(train_data, valid_data, model, args, 0, "bert")
 
 if __name__ == '__main__':
     #test_hyperparamaters(args)
