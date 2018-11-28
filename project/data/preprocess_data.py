@@ -195,18 +195,18 @@ def extractText(df_train, id_list):
     df_train = df_train[df_train["Patient ID"].isin(id_list)]
 
     df_train['is_baseline'] = (df_train[column_baseline] == 'baseline')
-    groupped_df = df_train.groupby([column_patient, 'is_baseline'])['clean_report_text', 'bert_text'].apply(lambda x: x.sum())
+    groupped_df = df_train.groupby([column_patient, 'is_baseline']).apply(lambda x: x.sum())
 
     predictions = df_train.groupby(['Patient ID'])["Objective Response per RECIST v1.1"].first()
 
     # fill missing reports with nothing
-    for i, v in groupped_df.iteritems():
-        patient, baseline = i
-        if (patient, not baseline) not in groupped_df:
-            groupped_df[(patient, not baseline)] = 'insert random word'
+    for val in ("clean_report_text", "bert_text"):
+        for i, v in groupped_df[val].iteritems():
+            patient, baseline = i
+            if (patient, not baseline) not in groupped_df:
+                groupped_df[val][(patient, not baseline)] = 'none'
 
     # now create the different dataframes
-    groupped_df = groupped_df.to_frame().reset_index()
     baseline_reports = groupped_df[groupped_df['is_baseline'] == True]
     progress_reports = groupped_df[groupped_df['is_baseline'] == False]
     return (baseline_reports, progress_reports, predictions)

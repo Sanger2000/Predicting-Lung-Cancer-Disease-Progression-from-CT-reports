@@ -60,8 +60,14 @@ def prepare_y(data_y):
 
 def createTextFeatures(reports, max_base_feats, max_prog_feats):
     baseline_reports, progress_reports, _ = reports
-    baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'], max_features=max_base_feats).todense())
-    progress_bow = np.array(learn_bow(progress_reports['clean_report_text'], max_features=max_prog_feats).todense())
+    print(baseline_reports)
+    print(baseline_reports['clean_report_text'])
+    print(type(baseline_reports['clean_report_text']))
+    print(baseline_reports['clean_report_text'].tolist())
+    baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'].tolist(), max_features=max_base_feats).todense())
+    progress_bow = np.array(learn_bow(progress_reports['clean_report_text'].tolist(), max_features=max_prog_feats).todense())
+    print(baseline_bow.shape)
+    print(progress_bow.shape)
     overallTextFeatures = np.hstack([baseline_bow, progress_bow])
     return overallTextFeatures
 
