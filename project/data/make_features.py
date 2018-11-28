@@ -59,13 +59,13 @@ def prepare_y(data_y):
     return label_enc_y.transform(data_y)
 
 def createTextFeatures(reports, max_base_feats, max_prog_feats):
-    baseline_reports, progress_reports, _ = reports
-    print(baseline_reports)
-    print(baseline_reports['clean_report_text'])
-    print(type(baseline_reports['clean_report_text']))
-    print(baseline_reports['clean_report_text'].tolist())
-    baseline_bow = np.array(learn_bow(baseline_reports['clean_report_text'].tolist(), max_features=max_base_feats).todense())
-    progress_bow = np.array(learn_bow(progress_reports['clean_report_text'].tolist(), max_features=max_prog_feats).todense())
+    baseline_text, progress_text, _, __ = reports
+    #print(baseline_reports)
+    #print(baseline_reports['clean_report_text'])
+    #print(type(baseline_reports['clean_report_text']))
+    #print(baseline_reports['clean_report_text'].tolist())
+    baseline_bow = np.array(learn_bow(baseline_text['clean_report_text'].tolist(), max_features=max_base_feats).todense())
+    progress_bow = np.array(learn_bow(progress_text['clean_report_text'].tolist(), max_features=max_prog_feats).todense())
     print(baseline_bow.shape)
     print(progress_bow.shape)
     overallTextFeatures = np.hstack([baseline_bow, progress_bow])
@@ -152,8 +152,8 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     baseX, progX, labs, id_list = setupFeatureVectors(df_extraction, desired_features, max_before, max_after)
     reports = preprocess.extractText(df, id_list)
     df_text = createTextFeatures(reports, max_base, max_prog)
-    id_vals = torch.tensor(list(map(lambda x: tokenize_input(x[0], x[1], split=0.4), zip(reports[0]['bert_text'], \
-                                                                                    reports[1]['bert_text']))))
-    id_vals.resize_((2, id_vals.shape(0)))
+    id_vals = torch.tensor(list(map(lambda x: tokenize_input(x[0], x[1], split=0.4), zip(reports[2]['bert_text'], \
+                                                                                    reports[3]['bert_text']))))
+    id_vals.resize_((2, id_vals.size(0)))
 
-    return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs), ids[0], ids[1]
+    return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs), id_vals[0], id_vals[1]

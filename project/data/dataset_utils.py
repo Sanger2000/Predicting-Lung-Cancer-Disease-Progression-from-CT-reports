@@ -21,8 +21,8 @@ def make_datasets(args):
     token_valid, token_train = token_ids[:split], token_ids[split:]
     segment_valid, segment_train = segment_ids[:split], segment_ids[split:]
 
-    trainDataset = TotalData(baseX_train, progX_train, text_train, labels_train)
-    validDataset = TotalData(baseX_valid, progX_valid, text_valid, labels_valid)
+    trainDataset = TotalData(baseX_train, progX_train, text_train, labels_train, token_train, segment_train)
+    validDataset = TotalData(baseX_valid, progX_valid, text_valid, labels_valid, token_valid, segment_valid)
 
     return trainDataset, validDataset
 

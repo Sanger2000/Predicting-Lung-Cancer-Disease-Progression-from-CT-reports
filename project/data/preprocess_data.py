@@ -195,18 +195,69 @@ def extractText(df_train, id_list):
     df_train = df_train[df_train["Patient ID"].isin(id_list)]
 
     df_train['is_baseline'] = (df_train[column_baseline] == 'baseline')
-    groupped_df = df_train.groupby([column_patient, 'is_baseline']).apply(lambda x: x.sum())
+    groupped_text = df_train.groupby([column_patient, 'is_baseline'])['clean_report_text'].apply(lambda x: x.sum())
+
+    for i, v in groupped_text.iteritems():
+        patient, baseline = i
+        if (patient, not baseline) not in groupped_text:
+            groupped_text[(patient, not baseline)] = 'none'
+
+    # now create the different dataframes
+    groupped_text = groupped_text.to_frame().reset_index()
+    baseline_text = groupped_text[groupped_text['is_baseline'] == True]
+    progress_text= groupped_text[groupped_text['is_baseline'] == False]
+
+    groupped_bert = df_train.groupby([column_patient, 'is_baseline'])['bert_text'].apply(lambda x: x.sum())
+
+    for i, v in groupped_bert.iteritems():
+        patient, baseline = i
+        if (patient, not baseline) not in groupped_bert:
+            groupped_bert[(patient, not baseline)] = 'none'
+
+    # now create the different dataframes
+    groupped_bert = groupped_bert.to_frame().reset_index()
+    baseline_bert = groupped_bert[groupped_bert['is_baseline'] == True]
+    progress_bert= groupped_bert[groupped_bert['is_baseline'] == False]
+    '''
+    groupped_df_text = df_train.groupby([column_patient, 'is_baseline'])['clean_report_text'].apply(lambda x: x.sum())
 
     predictions = df_train.groupby(['Patient ID'])["Objective Response per RECIST v1.1"].first()
 
     # fill missing reports with nothing
-    for val in ("clean_report_text", "bert_text"):
-        for i, v in groupped_df[val].iteritems():
-            patient, baseline = i
-            if (patient, not baseline) not in groupped_df:
-                groupped_df[val][(patient, not baseline)] = 'none'
+    for i, v in groupped_df_text.iteritems():
+        patient, baseline = i
+        if (patient, not baseline) not in groupped_df_text:
+            print(patient, baseline)
+            groupped_df_text[(patient, not baseline)] = 'none'
+
+
+
+    print(len(groupped_df_text))
+
+    #print(groupped_df_text)
 
     # now create the different dataframes
-    baseline_reports = groupped_df[groupped_df['is_baseline'] == True]
-    progress_reports = groupped_df[groupped_df['is_baseline'] == False]
-    return (baseline_reports, progress_reports, predictions)
+    baseline_text = groupped_df_text[groupped_df_text['is_baseline'] == True]
+    print(len(baseline_text))
+    progress_text = groupped_df_text[groupped_df_text['is_baseline'] == False]
+    print (len(progress_text))
+
+    groupped_df_bert = df_train.groupby([column_patient, 'is_baseline'])['bert_text'].apply(lambda x: x.sum())
+    for i, v in groupped_df_bert.iteritems():
+        patient, baseline = i
+        if (patient, not baseline) not in groupped_df_bert:
+            print(patient, baseline)
+            groupped_df_bert[(patient, not baseline)] = 'none'
+    print(len(groupped_df_bert))
+    baseline_bert = groupped_df_bert[groupped_df_bert['is_baseline'] == True]
+    print(len(baseline_bert))
+    progress_bert = groupped_df_bert[groupped_df_bert['is_baseline'] == False]
+    print (len(progress_bert))
+
+    return (baseline_text, progress_text, predictions)
+    '''
+    print(len(progress_text))
+    print(len(baseline_text))
+    print(len(progress_bert))
+    print(len(baseline_bert))
+    return baseline_text, progress_text, baseline_bert, progress_bert
