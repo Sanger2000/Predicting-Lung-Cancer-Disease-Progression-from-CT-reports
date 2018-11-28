@@ -4,9 +4,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 import project.data.preprocess_data as preprocess
 import torch
 from sklearn.preprocessing import LabelEncoder
-from project.data import tokenization
+from pytorch_pretrained_bert import BertTokenizer
 
-def tokenize_input(baseline_text, context_text, split, tokenizer=tokenization.FullTokenizer("cased_bert/vocab.txt"), max_len=509):
+def tokenize_input(baseline_text, context_text, split, tokenizer=BertTokenizer("cased_bert/vocab.txt"), max_len=509):
     baseline = tokenizer.tokenize(baseline_text)
     context = tokenizer.tokenize(context_text)
     baseline_size = int(split*max_len)
@@ -58,7 +58,7 @@ def prepare_y(data_y):
 
 def createTextFeatures(reports, max_base_feats, max_prog_feats):
     baseline_text, progress_text, _, __ = reports
-    
+
     baseline_bow = np.array(learn_bow(baseline_text['clean_report_text'].tolist(), max_features=max_base_feats).todense())
     progress_bow = np.array(learn_bow(progress_text['clean_report_text'].tolist(), max_features=max_prog_feats).todense())
     print(baseline_bow.shape)
@@ -149,7 +149,7 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     df_text = createTextFeatures(reports, max_base, max_prog)
     id_vals = torch.tensor(list(map(lambda x: tokenize_input(x[0], x[1], split=0.4), zip(reports[2]['bert_text'], \
                                                                                     reports[3]['bert_text']))))
-    
+
     id_vals.resize_((2, id_vals.size(0), id_vals.size(2)))
     print(id_vals.shape)
     return torch.from_numpy(baseX), torch.from_numpy(progX), torch.from_numpy(df_text), torch.from_numpy(labs), id_vals[0], id_vals[1]
