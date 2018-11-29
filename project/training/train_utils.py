@@ -76,8 +76,6 @@ def run_epoch(data, is_training, model, optimizer, args, type):
         elif type == "features":
             out = model(x, y)
         elif type == "bert":
-            print(max(a[0]))
-            print(max(b[0]))
             out = model(a, b)
         else:
             out = model(z)
