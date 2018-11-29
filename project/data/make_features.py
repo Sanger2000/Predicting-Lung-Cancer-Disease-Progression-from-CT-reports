@@ -6,7 +6,9 @@ import torch
 from sklearn.preprocessing import LabelEncoder
 from pytorch_pretrained_bert import BertTokenizer
 
-def tokenize_input(baseline_text, context_text, split, tokenizer=BertTokenizer("cased_bert/vocab.txt"), max_len=509):
+def tokenize_input(baseline_text, context_text, split, tokenizer=None, max_len=900):
+    if tokenizer == None:
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     baseline = tokenizer.tokenize(baseline_text)
     context = tokenizer.tokenize(context_text)
     baseline_size = int(split*max_len)
@@ -147,7 +149,8 @@ def create_data(max_base, max_prog, max_before, max_after, desired_features):
     baseX, progX, labs, id_list = setupFeatureVectors(df_extraction, desired_features, max_before, max_after)
     reports = preprocess.extractText(df, id_list)
     df_text = createTextFeatures(reports, max_base, max_prog)
-    id_vals = torch.tensor(list(map(lambda x: tokenize_input(x[0], x[1], split=0.4), zip(reports[2]['bert_text'], \
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    id_vals = torch.tensor(list(map(lambda x: tokenize_input(x[0], x[1], split=0.4, tokenizer=tokenizer), zip(reports[2]['bert_text'], \
                                                                                     reports[3]['bert_text']))))
 
     id_vals.resize_((2, id_vals.size(0), id_vals.size(2)))

@@ -88,7 +88,7 @@ def test_hyperparamaters(args, model_save_directory="test_models/", dictionary_s
 def finetune_bert(args, model_save_directory, bert_file_path):
 
     train_data, valid_data = data_utils.make_datasets(args)
-    model = BertForSequenceClassification.from_pretrained("BertModels", num_labels=4)
+    model = BertForSequenceClassification.from_pretrained("bert-base-uncased",  num_labels=4)
 
     args.save_path = model_save_directory + "bert_model.pt"
     ACC, _ = train_utils.train_model(train_data, valid_data, model, args, 0, "bert")
